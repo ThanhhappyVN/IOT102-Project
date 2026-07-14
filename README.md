@@ -1,24 +1,29 @@
-# Smart Parking System
+# Smart Parking System Based on IoT
 
 ## Introduction
-This project is developed for the IOT102 course.
+This project was developed for the IOT102 course. The system provides an IoT-based smart parking solution that automates vehicle entry and exit, monitors parking space availability in real time, and synchronizes parking data with a cloud platform. The system is designed to improve parking efficiency, reduce manual operation, and provide convenient parking management.
 
 ## Features
-- RFID authentication
-- Automatic gate control
-- Parking slot detection
-- LCD display
+- RFID-based vehicle authentication
+- Automatic gate control using a servo motor
+- Real-time parking occupancy detection with ultrasonic sensors
+- Parking status displayed on an LCD 1602 with I2C module
+- ESP32-based Wi-Fi communication
+- Cloud data synchronization for remote parking monitoring
+- Automatic update of available parking spaces
 
 ## Hardware
+- ESP32
 - Arduino Uno
-- RC522 RFID
-- HC-SR04
-- Servo Motor
-- LCD1602
+- RFID RC522 Module
+- HC-SR04 Ultrasonic Sensor
+- Servo Motor (SG90)
+- LCD 1602 with I2C Module
+- Power Supply
+- Jumper Wires
 
 ## Repository Structure
 - `code/` - Arduino source code
-- `circuit/` - Circuit schematic
 - `images/` - Project images
 - `report/` - Full project report
 
