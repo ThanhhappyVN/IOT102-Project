@@ -23,7 +23,7 @@ This project was developed for the IOT102 course. The system provides an IoT-bas
 - Jumper Wires
 
 ## Repository Structure
-- `code/` - Arduino source code
+- `code/` - Arduino, ESP32 source code
 - `images/` - Project images
 - `report/` - Full project report
 
