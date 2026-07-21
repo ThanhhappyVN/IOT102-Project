@@ -1,0 +1,392 @@
+{
+  "module":      "Blynk.NCP",
+  "@version":    "0.7.0",
+  "@author":     "Volodymyr Shymanskyy",
+  "@license":    "Apache-2.0",
+  "@output_dir": "./src/idl",
+  "interfaces" : {
+    "ncp": {
+      "ping": {
+        "@uid": "0101",
+        "@attrs": [ "no_impl", "c:ret_status" ],
+        "@timeout": 100
+      },
+      "reboot": {
+        "@uid": "0102",
+        "returns": "Bool"
+      },
+      "hasUID": {
+        "@uid": "0103",
+        "@doc" : "Checks if UID is implemented",
+        "args": [ { "uid": "UInt16" } ],
+        "returns": "Bool"
+      }
+    },
+    "mcu": {
+      "ping": {
+        "@uid": "0181",
+        "@attrs": [ "no_impl", "c:ret_status" ],
+        "@timeout": 100
+      },
+      "reboot": {
+        "@uid": "0182",
+        "returns": "Bool"
+      },
+      "hasUID": {
+        "@uid": "0183",
+        "@doc" : "Checks if UID is implemented",
+        "args": [ { "uid": "UInt16" } ],
+        "returns": "Bool"
+      }
+    },
+    "hw": {
+      "setUartBaudRate": {
+        "@uid": "0201",
+        "args": [ { "baud": "UInt32" } ],
+        "returns": "Bool",
+        "@c:error_val": false
+      },
+      "initUserButton": {
+        "@uid": "0211",
+        "args": [
+          { "gpio": "UInt16" },
+          { "active_low": "Bool" }
+        ],
+        "returns": "Bool"
+      },
+      "initLED": {
+        "@uid": "0221",
+        "@doc" : "Initialize a monochrome LED state indicator",
+        "args": [
+          { "gpio": "UInt16" },
+          { "active_low": "Bool" }
+        ],
+        "returns": "Bool"
+      },
+      "initRGB": {
+        "@uid": "0222",
+        "@doc" : "Initialize an RGB state indicator",
+        "args": [
+          { "gpio_r": "UInt16" },
+          { "gpio_g": "UInt16" },
+          { "gpio_b": "UInt16" },
+          { "common_anode": "Bool" }
+        ],
+        "returns": "Bool"
+      },
+      "initARGB": {
+        "@uid": "0223",
+        "@doc" : "Initialize an addressable RGB state indicator",
+        "args": [
+          { "gpio":  "UInt16" },
+          { "mode":  "UInt8"  },
+          { "count": "UInt8"  }
+        ],
+        "returns": "Bool"
+      },
+      "setLedBrightness": {
+        "@uid": "0224",
+        "args": [ { "value": "UInt8" } ],
+        "returns": "Bool"
+      },
+
+      "getWiFiMAC": {
+        "@uid": "0231",
+        "args": [ { "mac": "String", "@dir": "out" } ],
+        "returns": "Bool"
+      },
+      "getEthernetMAC": {
+        "@uid": "0232",
+        "args": [ { "mac": "String", "@dir": "out" } ],
+        "returns": "Bool"
+      }
+    },
+    "blynk": {
+      "getNcpVersion": {
+        "@uid": "0305",
+        "args": [ { "ver": "String", "@dir": "out" } ],
+        "returns": "Bool"
+      },
+      "setVendorPrefix": {
+        "@uid": "0302",
+        "args": [ { "vendor": "String" } ],
+        "returns": "Bool"
+      },
+      "setVendorServer": {
+        "@uid": "0303",
+        "args": [ { "host": "String" } ],
+        "returns": "Bool"
+      },
+      "setFirmwareInfo": {
+        "@uid": "0304",
+        "args": [
+          { "type":     "String" },
+          { "version":  "String" },
+          { "build":    "String" },
+          { "blynk":    "String" }
+        ],
+        "returns": "Bool"
+      },
+      "initialize": {
+        "@uid": "0301",
+        "@timeout": 5000,
+        "args": [
+          { "templateID":    "String" },
+          { "templateName":  "String" }
+        ],
+        "returns": "Bool"
+      },
+
+      "getHotspotName": {
+        "@uid": "0307",
+        "@doc": "Device name that is broadcasted during the configuration process",
+        "args": [ { "hotspot": "String", "@dir": "out" } ],
+        "returns": "Bool"
+      },
+      "isConfigured": {
+        "@uid": "0324",
+        "@doc": "Check if NCP has all the required configuration to try connecting to the Cloud",
+        "returns": "Bool"
+      },
+      "configStart": {
+        "@uid": "0321",
+        "@doc": "Enter configuration mode",
+        "returns": "Bool"
+      },
+      "configStop":  {
+        "@uid": "0322",
+        "@doc": "Exit configuration mode",
+        "returns": "Bool"
+      },
+      "configReset": {
+        "@uid": "0323",
+        "@doc": "Erase Blynk Cloud configuration",
+        "returns": "Bool"
+      },
+      "setConfigTimeout": {
+        "@uid": "0325",
+        "@doc": "Configuration mode timeout. Default: 180 seconds",
+        "args": [ { "timeout": "UInt16" } ],
+        "returns": "Bool"
+      },
+      "setConfigSkipLimit": {
+        "@uid": "0326",
+        "@doc": "If configuration is skipped N times, device won't automatically enter configuration mode. Configuration reset is required to enter the configuration mode again. Default: 10 times",
+        "args": [ { "count": "UInt8" } ],
+        "returns": "Bool"
+      },
+
+      "setTime": {
+        "@uid": "0351",
+        "@doc": "Initialize NCP time from an external time source",
+        "args": [
+          { "time": "Int64", "@doc": "Current time in milliseconds elapsed since the UNIX epoch" }
+        ],
+        "returns": "Bool"
+      },
+      "getTime": {
+        "@uid": "0352",
+        "args": [
+          { "iso8601":    "String", "@dir": "out" },
+          { "time":       "Int64",  "@dir": "out", "@doc": "Current time in milliseconds elapsed since the UNIX epoch" },
+          { "offset":     "Int16",  "@dir": "out", "@doc": "Local time offset in minutes, including DST" },
+          { "tz_abbr":    "String", "@dir": "out", "@doc": "Timezone abbreviation" },
+          { "dst_status": "UInt8",  "@dir": "out", "@doc": "0 - No information, 1 - Not Applicable, 2 - Active, 3 - Inactive" }
+        ],
+        "returns": "Bool"
+      },
+      "getLocationInfo": {
+        "@uid": "0353",
+        "args": [
+          { "lat":        "String", "@dir": "out", "@doc": "Approximate GPS latitude" },
+          { "lon":        "String", "@dir": "out", "@doc": "Approximate GPS longitude" },
+          { "olson_id":   "String", "@dir": "out", "@doc": "OLSON timezone id" },
+          { "posix_tz":   "String", "@dir": "out", "@doc": "POSIX timezone rule" }
+        ],
+        "returns": "Bool"
+      },
+
+      "otaUpdateStart": {
+        "@uid": "0341",
+        "args": [ { "chunk": "UInt16" } ],
+        "returns": "Bool"
+      },
+      "otaUpdateGetCRC32": {
+        "@uid": "0342",
+        "args": [ { "crc": "UInt32", "@dir": "out" } ],
+        "returns": "Bool"
+      },
+      "otaUpdateGetMD5": {
+        "@uid": "0343",
+        "args": [ { "digest": "Binary", "@dir": "out" } ],
+        "returns": "Bool"
+      },
+      "otaUpdateGetSHA256": {
+        "@uid": "0344",
+        "args": [ { "digest": "Binary", "@dir": "out" } ],
+        "returns": "Bool"
+      },
+      "otaUpdatePrefetch": {
+        "@uid": "0345",
+        "@doc": "Prefetch the firmware file, to reduce the risk of download failure",
+        "@timeout": 30000,
+        "returns": "UInt8"
+      },
+      "otaUpdateSuspend": {
+        "@uid": "0346",
+        "@doc": "Suspend OTA during important operations",
+        "args": [
+          { "timeout": "UInt16", "@doc": "Timeout in seconds, max 18 hours. Specify 0 to resume OTA" }
+        ],
+        "returns": "Bool"
+      },
+
+      "factoryReset": {
+        "@uid": "0331",
+        "@doc": "Erase all configuration and reboot",
+        "returns": "Bool"
+      },
+      "factoryTestWiFiAP": {
+        "@uid": "0333",
+        "@doc": "Start a SoftAP on the specified channel for the frequency test",
+        "@timeout": 5000,
+        "args": [
+          { "channel":  "UInt16" }
+        ],
+        "returns": "UInt8"
+      },
+      "factoryTestWiFi": {
+        "@uid": "0332",
+        "@timeout": 30000,
+        "args": [
+          { "ssid":     "String" },
+          { "password": "String" },
+          { "rssi":     "Int16", "@dir": "out" }
+        ],
+        "returns": "UInt8"
+      },
+      "factoryTestConnect": {
+        "@uid": "033A",
+        "@doc": "Test connection to the default server",
+        "@timeout": 10000,
+        "returns": "UInt8"
+      },
+
+      "getState": {
+        "@uid": "0306",
+        "returns": "UInt8"
+      },
+      "virtualWrite": {
+        "@uid": "0311",
+        "@oneway": true,
+        "args": [
+          { "vpin":  "UInt16" },
+          { "value": "Binary" }
+        ]
+      },
+      "setProperty": {
+        "@uid": "0314",
+        "@oneway": true,
+        "args": [
+          { "vpin":     "UInt16" },
+          { "property": "String" },
+          { "value":    "Binary" }
+        ]
+      },
+      "syncAll": {
+        "@uid": "0312",
+        "@oneway": true
+      },
+      "syncVirtual": {
+        "@uid": "0313",
+        "@oneway": true,
+        "args": [ { "vpins": "Binary" } ]
+      },
+      "logEvent": {
+        "@uid": "0317",
+        "@oneway": true,
+        "args": [
+          { "event_code":  "String" },
+          { "description": "String" }
+        ]
+      },
+      "resolveEvent": {
+        "@uid": "0318",
+        "@oneway": true,
+        "args": [ { "event_code": "String" } ]
+      },
+      "resolveAllEvents": {
+        "@uid": "0319",
+        "@oneway": true,
+        "args": [ { "event_code": "String" } ]
+      },
+      "beginGroup": {
+        "@uid": "0315",
+        "@oneway": true,
+        "args": [ { "timestamp": "Int64" } ]
+      },
+      "endGroup": {
+        "@uid": "0316",
+        "@oneway": true
+      },
+      "setMetadata": {
+        "@uid": "031A",
+        "@oneway": true,
+        "args": [
+          { "field": "String" },
+          { "value": "String" }
+        ]
+      }
+    },
+    "client": {
+      "blynkVPinChange": {
+        "@uid": "0412",
+        "@oneway": true,
+        "args": [
+          { "vpin":  "UInt16" },
+          { "param": "Binary" }
+        ]
+      },
+      "blynkStateChange": {
+        "@uid": "0411",
+        "@oneway": true,
+        "args": [ { "state": "UInt8" } ]
+      },
+      "processEvent": {
+        "@uid": "0421",
+        "@oneway": true,
+        "args": [ { "event": "UInt8" } ]
+      },
+      "otaUpdateAvailable": {
+        "@uid": "0441",
+        "@timeout": 5000,
+        "args": [
+          { "filename": "String" },
+          { "filesize": "UInt32" },
+          { "fw_type":  "String" },
+          { "fw_ver":   "String" },
+          { "fw_build": "String" }
+        ],
+        "returns": "Bool"
+      },
+      "otaUpdateWrite": {
+        "@uid": "0442",
+        "@timeout": 5000,
+        "args": [
+          { "offset": "UInt32" },
+          { "chunk":  "Binary" },
+          { "crc32":  "UInt32" }
+        ],
+        "returns": "Bool"
+      },
+      "otaUpdateFinish": {
+        "@uid": "0443",
+        "@timeout": 5000,
+        "returns": "Bool"
+      },
+      "otaUpdateCancel": {
+        "@uid": "0444"
+      }
+    }
+  }
+}
