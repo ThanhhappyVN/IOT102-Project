@@ -33,8 +33,6 @@ byte card2[4] = {0x23, 0x69, 0x18, 0x05};
 byte card3[4] = {0x7C, 0x8C, 0x1B, 0x06};
 byte card4[4] = {0xA7, 0x60, 0x1B, 0x06};
 
-bool cardStatus[4] = {false, false, false, false}; 
-
 enum ParkingState {
     IDLE,
     WAIT_ENTRY_CARD,
@@ -48,7 +46,7 @@ unsigned long stateTimer = 0;
 unsigned long closeTimer = 0;
 String currentCard = "";
 
-int checkCard(String &id, bool isEntry);
+bool checkCard(String &id);
 String getCardID();
 long readDistance(int trigPin, int echoPin);
 void openGate();
@@ -57,7 +55,7 @@ void sendToESP(String data);
 void showReady();
 void showFull();
 void showScan();
-void showError(int errorCode);
+void showInvalid();
 void showVehicleIn(String id);
 void showVehicleOut(String id);
 
@@ -118,25 +116,22 @@ void loop() {
                 break;
             }
 
-            if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
-                int cardResult = checkCard(currentCard, true);
-                if (cardResult == 1) {
-                    showVehicleIn(currentCard);
-                    occupiedSlot++;
-                    availableSlot = TOTAL_SLOT - occupiedSlot;
-                    
-                    openGate();
-                    state = GATE_OPENING;
-                    
-                    sendToESP("IN," + currentCard);
-                    sendToESP("SLOT," + String(occupiedSlot) + "," + String(availableSlot));
-                    stateTimer = millis();
-                } else {
-                    showError(cardResult);
-                    if (occupiedSlot >= TOTAL_SLOT) showFull();
-                    else showReady();
-                    state = IDLE;
-                }
+            if (checkCard(currentCard)) {
+                showVehicleIn(currentCard);
+                occupiedSlot++;
+availableSlot = TOTAL_SLOT - occupiedSlot;
+                
+                openGate();
+                state = GATE_OPENING;
+                
+                sendToESP("IN," + currentCard);
+                sendToESP("SLOT," + String(occupiedSlot) + "," + String(availableSlot));
+                stateTimer = millis();
+            } else if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+                showInvalid();
+                if (occupiedSlot >= TOTAL_SLOT) showFull();
+                else showReady();
+                state = IDLE;
             }
             break;
 
@@ -148,25 +143,22 @@ void loop() {
                 break;
             }
 
-            if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
-                int cardResult = checkCard(currentCard, false);
-                if (cardResult == 1) {
-                    showVehicleOut(currentCard);
-                    if (occupiedSlot > 0) occupiedSlot--;
-                    availableSlot = TOTAL_SLOT - occupiedSlot;
-                    
-                    openGate();
-                    state = GATE_OPENING;
-                    
-                    sendToESP("OUT," + currentCard);
-                    sendToESP("SLOT," + String(occupiedSlot) + "," + String(availableSlot));
-                    stateTimer = millis();
-                } else {
-                    showError(cardResult);
-                    if (occupiedSlot >= TOTAL_SLOT) showFull();
-                    else showReady();
-                    state = IDLE;
-                }
+            if (checkCard(currentCard)) {
+                showVehicleOut(currentCard);
+                if (occupiedSlot > 0) occupiedSlot--;
+                availableSlot = TOTAL_SLOT - occupiedSlot;
+                
+                openGate();
+                state = GATE_OPENING;
+                
+                sendToESP("OUT," + currentCard);
+                sendToESP("SLOT," + String(occupiedSlot) + "," + String(availableSlot));
+                stateTimer = millis();
+            } else if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+                showInvalid();
+                if (occupiedSlot >= TOTAL_SLOT) showFull();
+                else showReady();
+                state = IDLE;
             }
             break;
 
@@ -207,37 +199,23 @@ long readDistance(int trigPin, int echoPin) {
     return duration * 0.034 / 2;
 }
 
-int checkCard(String &id, bool isEntry) {
+bool checkCard(String &id) {
+    if (!rfid.PICC_IsNewCardPresent()) return false;
+    if (!rfid.PICC_ReadCardSerial()) return false;
+
     byte *uid = rfid.uid.uidByte;
-    int cardIndex = -1;
+    bool match = (memcmp(uid, card1, 4) == 0 ||
+                  memcmp(uid, card2, 4) == 0 ||
+                  memcmp(uid, card3, 4) == 0 ||
+                  memcmp(uid, card4, 4) == 0);
 
-    if (memcmp(uid, card1, 4) == 0) cardIndex = 0;
-    else if (memcmp(uid, card2, 4) == 0) cardIndex = 1;
-    else if (memcmp(uid, card3, 4) == 0) cardIndex = 2;
-    else if (memcmp(uid, card4, 4) == 0) cardIndex = 3;
-
-    if (cardIndex == -1) {
-        getCardID();
-        return 2;
+    if (match) {
+id = getCardID();
+        return true;
     }
-
-    if (isEntry) {
-        if (cardStatus[cardIndex]) {
-            getCardID();
-            return 3;
-        }
-        cardStatus[cardIndex] = true;
-        id = getCardID();
-        return 1;
-    } else {
-        if (!cardStatus[cardIndex]) {
-            getCardID();
-            return 4;
-        }
-        cardStatus[cardIndex] = false;
-        id = getCardID();
-        return 1;
-    }
+    
+    getCardID();
+    return false;
 }
 
 String getCardID() {
@@ -272,14 +250,9 @@ void showScan() {
     lcd.setCursor(0, 0); lcd.print("Available: "); lcd.print(availableSlot);
     lcd.setCursor(0, 1); lcd.print("Please Scan");
 }
-void showError(int errorCode) {
+void showInvalid() {
     lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Access Denied!");
-    lcd.setCursor(0, 1);
-    if (errorCode == 2) lcd.print("Unknown Card");
-    else if (errorCode == 3) lcd.print("Already Inside");
-    else if (errorCode == 4) lcd.print("Already Outside");
+    lcd.setCursor(0, 0); lcd.print("Invalid Card");
     delay(1500);
 }
 void showVehicleIn(String id) {
