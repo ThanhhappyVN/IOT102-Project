@@ -28,4 +28,4 @@ This project was developed for the IOT102 course. The system provides an IoT-bas
 - `report/` - Full project report
 
 ## Full Report
-The complete report is available in `report/SmartParking_Report.pdf`.
+The complete report is available in `report/Final_Report.pdf`.
