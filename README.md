@@ -25,7 +25,3 @@ This project was developed for the IOT102 course. The system provides an IoT-bas
 ## Repository Structure
 - `code/` - Arduino, ESP32 source code
 - `circuit/` - Project circuit schematic
-- `report/` - Full project report
-
-## Full Report
-The complete report is available in `report/Final_Report.pdf`.
